@@ -1,7 +1,9 @@
 from fastapi import APIRouter,UploadFile,File
 import shutil
 from pathlib import Path
-from app.services.transcription import transcribe_audio
+from app.services.meeting_service import process_meeting
+from app.utils.file_utils import generate_filename
+
 
 router = APIRouter()
 
@@ -21,16 +23,27 @@ async def upload_audio(file:UploadFile = File(...)):
             "status":"error",
             "message":"Only MP3, WAV and M4A file are allowed."
         }
-        
-    file_path = UPLOAD_DIR / file.filename
+    
+    unique_filename = generate_filename(file.filename)    
+    file_path = UPLOAD_DIR / unique_filename
     
     with open(file_path,"wb") as buffer:
         shutil.copyfileobj(file.file,buffer)
         
-    transcript = transcribe_audio(str(file_path))
-        
+    meeting = process_meeting((str(file_path)))
+    
+    if not meeting["success"]:
+        return {
+            "status":"error",
+            "message": meeting["error"]
+        }
+    
     return {
         "status":"success",
-        "filename":file.filename,
-        "transcript":transcript
+        "origial_filename":file.filename,
+        "stored_filename":unique_filename,
+        "transcript":meeting["transcript"],
+        "summary":meeting["summary"],
+        "action_items":meeting["action_items"],
+        
     }
