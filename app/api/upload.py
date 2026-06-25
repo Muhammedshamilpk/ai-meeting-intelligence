@@ -1,8 +1,10 @@
-from fastapi import APIRouter,UploadFile,File
+from fastapi import APIRouter,UploadFile,File,Depends
+from sqlalchemy.orm import Session
 import shutil
 from pathlib import Path
 from app.services.meeting_service import process_meeting
 from app.utils.file_utils import generate_filename
+from app.database.dependencies import get_db
 
 
 router = APIRouter()
@@ -11,7 +13,8 @@ UPLOAD_DIR =Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 @router.post("/upload")
-async def upload_audio(file:UploadFile = File(...)):
+async def upload_audio(file:UploadFile = File(...),
+                       db: Session = Depends(get_db)):
     
     #validate audio
     allowed_extensions = {".mp3",".wav",".m4a"}
@@ -30,7 +33,10 @@ async def upload_audio(file:UploadFile = File(...)):
     with open(file_path,"wb") as buffer:
         shutil.copyfileobj(file.file,buffer)
         
-    meeting = process_meeting((str(file_path)))
+    meeting = process_meeting(audio_path=str(file_path),
+                              original_filename =file.filename,
+                              stored_filename = unique_filename,
+                              db=db)
     
     if not meeting["success"]:
         return {
@@ -40,6 +46,7 @@ async def upload_audio(file:UploadFile = File(...)):
     
     return {
         "status":"success",
+        "meeting_id":meeting["meeting_id"],
         "origial_filename":file.filename,
         "stored_filename":unique_filename,
         "transcript":meeting["transcript"],
