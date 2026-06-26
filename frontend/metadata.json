@@ -1,0 +1,6 @@
+{
+  "name": "Enterprise AI Meeting Intelligence",
+  "description": "A professional SaaS frontend for analyzing meeting recordings, generating transcripts, summaries, action items, and follow-up emails.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

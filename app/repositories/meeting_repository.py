@@ -42,3 +42,16 @@ class MeetingRepository:
             .filter(Meeting.id==meeting_id)
             .first()
         )
+    def delete_meeting(self, meeting_id: int):
+        meeting = (
+            self.db.query(Meeting)
+            .filter(Meeting.id == meeting_id)
+            .first()
+        )
+
+        if meeting:
+            self.db.delete(meeting)
+            self.db.commit()
+            return True
+
+        return False
