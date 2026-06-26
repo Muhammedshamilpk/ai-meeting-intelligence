@@ -12,4 +12,5 @@ class Meeting(Base):
     transcript = Column(Text,nullable=False)
     summary = Column(Text,nullable = False)
     action_items = Column(JSON, nullable=False)
+    email = Column(Text,nullable=True)
     uploaded_at = Column(DateTime(timezone=True),default=lambda: datetime.now(timezone.utc))

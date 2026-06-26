@@ -6,30 +6,42 @@ client = Groq(api_key=GROQ_API_KEY)
 
 def extract_action_items(transcript:str):
     
+    
     prompt = f"""
-    You are an AI meeting assistant.
+Extract all action items explicitly mentioned in the meeting transcript.
 
-Extract all action items from the meeting.
+For each action item identify:
+- task
+- owner
+- deadline
 
 Return ONLY valid JSON.
-Format:
-[
-    {{
-        "task":"...",
-        "owner":"...",
-        "deadline":"..."
-    }}
-]
 
-if no deadline exists , return null
+If a deadline is not mentioned, return null.
+If an owner is not mentioned, return null.
 
 Transcript:
 {transcript}
-    """
+
+Return format:
+
+[
+    {{
+        "task": "...",
+        "owner": "...",
+        "deadline": "..."
+    }}
+]
+"""
+  
     
     response = client.chat.completions.create(
         model = "llama-3.3-70b-versatile",
         messages=[
+            {
+                "role":"system",
+                "content":"You are an enterprise meeting assistant that extracts structured action items without hallucinating."
+            },
             {
                 "role":"user",
                 "content":prompt
@@ -39,4 +51,9 @@ Transcript:
         temperature=0
     )
     
-    return json.loads(response.choices[0].message.content)
+    content = response.choices[0].message.content
+
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError as e:
+        return []

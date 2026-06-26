@@ -5,6 +5,7 @@ from pathlib import Path
 from app.services.meeting_service import process_meeting
 from app.utils.file_utils import generate_filename
 from app.database.dependencies import get_db
+from app.schemas.meeting import UploadResponseSchema
 
 
 router = APIRouter()
@@ -12,7 +13,8 @@ router = APIRouter()
 UPLOAD_DIR =Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-@router.post("/upload")
+@router.post("/upload",response_model =UploadResponseSchema)
+
 async def upload_audio(file:UploadFile = File(...),
                        db: Session = Depends(get_db)):
     
@@ -47,10 +49,11 @@ async def upload_audio(file:UploadFile = File(...),
     return {
         "status":"success",
         "meeting_id":meeting["meeting_id"],
-        "origial_filename":file.filename,
+        "original_filename":file.filename,
         "stored_filename":unique_filename,
         "transcript":meeting["transcript"],
         "summary":meeting["summary"],
         "action_items":meeting["action_items"],
+        "email":meeting["email"]
         
     }

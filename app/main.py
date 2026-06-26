@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from app.api.upload import router as upload_router
 from app.database.database import engine
 from app.database.models import Base 
+from app.api.meeting import router as meeting_router
+
+
 
 app=FastAPI(
     title = "Enterprise AI Meeting Intelligence",
@@ -14,9 +17,17 @@ app.include_router(
     prefix="/api",
     tags = ["Upload"]
 )
+
+
+app.include_router(
+    meeting_router,
+    prefix ="/api",
+    tags=["Meetings"]
+)
 @app.get("/")
 async def root():
     return { 
             "message":"Welcome to Enterprise AI Meeting Intelligence API"}
-    
+
+
 Base.metadata.create_all(bind=engine)

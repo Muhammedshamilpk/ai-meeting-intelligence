@@ -1,37 +1,22 @@
-from app.services.transcription import transcribe_audio
-from app.services.summarizer import generate_summary
-from app.services.action_extractor import extract_action_items
-from app.repositories.meeting_repository import MeetingRepository
 from sqlalchemy.orm import Session
-
+from app.agents.coordinator_agent import CoordinatorAgent
 
 
 def process_meeting(audio_path:str, original_filename:str, stored_filename:str, db:Session):
     
     try:    
-        transcript = transcribe_audio(audio_path)
+        coordinator = CoordinatorAgent(db)
+       
         
-        summary = generate_summary(transcript)
-        
-        action_items = extract_action_items(transcript)
-        
-        repository = MeetingRepository(db)
-        
-        meeting = repository.create_meeting(
-            
+        result  =coordinator.run(
+            audio_path=audio_path,
             original_filename=original_filename,
-            stored_filename=stored_filename,
-            transcript=transcript,
-            summary=summary,
-            action_items=action_items
+            stored_filename=stored_filename
             
         )
         
         return {"success":True,
-                "meeting_id":meeting.id,
-                "transcript":transcript,
-                "summary":summary,
-                "action_items":action_items
+                **result
                 }
         
         

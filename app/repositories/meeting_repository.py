@@ -14,14 +14,16 @@ class MeetingRepository:
         stored_filename,
         transcript,
         summary,
-        action_items
+        action_items,
+        email
     ):
         meeting = Meeting(
         original_filename=original_filename,
         stored_filename=stored_filename,
         transcript=transcript,
         summary=summary,
-        action_items=action_items
+        action_items=action_items,
+        email=email
         )
         
         self.db.add(meeting)
@@ -30,3 +32,13 @@ class MeetingRepository:
         
         
         return meeting
+    
+    def get_all_meetings(self):
+        return self.db.query(Meeting).all()
+
+    def get_meeting_by_id(self,meeting_id:int):
+        return (
+            self.db.query(Meeting)
+            .filter(Meeting.id==meeting_id)
+            .first()
+        )
